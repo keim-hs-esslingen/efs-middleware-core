@@ -50,6 +50,8 @@ import de.hsesslingen.keim.efs.middleware.validation.ConsistentBookingDateParams
 @Api(tags = {SwaggerAutoConfiguration.BOOKING_API_TAG})
 public class BookingApi extends ApiBase implements IBookingApi {
 
+    private static final String MISSING_TOKEN_MSG = "The Booking-API requires a token, but none was provided.";
+
     @Autowired
     private IBookingService service;
 
@@ -59,7 +61,10 @@ public class BookingApi extends ApiBase implements IBookingApi {
                 "state", state
         ));
 
-        var bookings = service.getBookings(state, parseToken(token));
+        var bookings = service.getBookings(
+                state,
+                parseRequiredToken(token, MISSING_TOKEN_MSG)
+        );
 
         logResult(bookings);
 
@@ -72,7 +77,10 @@ public class BookingApi extends ApiBase implements IBookingApi {
                 "id", id
         ));
 
-        var result = service.getBookingById(id, parseToken(token));
+        var result = service.getBookingById(
+                id,
+                parseRequiredToken(token, MISSING_TOKEN_MSG)
+        );
 
         logResult(result);
 
@@ -90,7 +98,8 @@ public class BookingApi extends ApiBase implements IBookingApi {
         ));
 
         var result = service.createNewBooking(
-                newBooking, optionReference, parseToken(token)
+                newBooking, optionReference,
+                parseRequiredToken(token, MISSING_TOKEN_MSG)
         );
 
         logResult(result);
@@ -109,7 +118,9 @@ public class BookingApi extends ApiBase implements IBookingApi {
         ));
 
         var result = service.modifyBooking(
-                id, booking, parseToken(token)
+                id,
+                booking,
+                parseRequiredToken(token, MISSING_TOKEN_MSG)
         );
 
         logResult(result);
@@ -131,7 +142,8 @@ public class BookingApi extends ApiBase implements IBookingApi {
         ));
 
         var result = service.performAction(
-                bookingId, action, secret, parseToken(token)
+                bookingId, action, secret,
+                parseRequiredToken(token, MISSING_TOKEN_MSG)
         );
 
         logResult(result);

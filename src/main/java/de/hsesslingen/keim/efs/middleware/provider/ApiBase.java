@@ -27,6 +27,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.hsesslingen.keim.efs.middleware.provider.credentials.AbstractCredentials;
 import de.hsesslingen.keim.efs.middleware.provider.credentials.ICredentialsDeserializer;
+import de.hsesslingen.keim.efs.mobility.exception.MiddlewareException;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Function;
@@ -81,6 +82,65 @@ public abstract class ApiBase<C extends AbstractCredentials> {
             logger.debug("No credentials provided by client.");
         } else if (logger.isDebugEnabled()) {
             debugOutputCredentials(result);
+        }
+
+        return result;
+    }
+
+    /**
+     * Attempts to deserialize the given token into a credentials object.If the
+     * given string value is {@code null} or empty, {@code null} is returned.<p>
+     * Otherwise, if an implementation of the {@link ICredentialsDeserializer}
+     * interface available as a spring bean, that one will be autowired and used
+     * for deserialization. Using this mechanism, the particular type of the
+     * credentials object can be controlled.
+     * <p>
+     * Last but not least, if such a bean is not implemented, the string is
+     * tried to be deserialized without knowledge of the underlying structure.
+     * <p>
+     * If parsing the credentials failed, an exception is thrown which is given
+     * by {@link throwableSupplier}.
+     *
+     * @param <T> The type of exception that this function throws if no
+     * credentials could be parsed.
+     * @param token
+     * @param throwableSupplier A supplier for a throwable if the parsing of the
+     * token returns {@code null}.
+     * @return
+     */
+    protected <T extends RuntimeException> C parseTokenAssertNotNull(String token, Supplier<T> throwableSupplier) {
+        C result = parseToken(token);
+
+        if (result == null) {
+            throw throwableSupplier.get();
+        }
+
+        return result;
+    }
+
+    /**
+     * Attempts to deserialize the given token into a credentials object.If the
+     * given string value is {@code null} or empty, {@code null} is returned.<p>
+     * Otherwise, if an implementation of the {@link ICredentialsDeserializer}
+     * interface available as a spring bean, that one will be autowired and used
+     * for deserialization. Using this mechanism, the particular type of the
+     * credentials object can be controlled.
+     * <p>
+     * Last but not least, if such a bean is not implemented, the string is
+     * tried to be deserialized without knowledge of the underlying structure.
+     * <p>
+     * If parsing the credentials failed, a TOKEN_INVALID
+     * {@link MiddlewareException} is thrown containing the given errorMessage.
+     *
+     * @param token
+     * @param errorMessage 
+     * @return
+     */
+    protected C parseRequiredToken(String token, String errorMessage) {
+        C result = parseToken(token);
+
+        if (result == null) {
+            throw MiddlewareException.tokenInvalidException(errorMessage);
         }
 
         return result;
