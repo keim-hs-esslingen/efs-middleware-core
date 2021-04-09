@@ -23,13 +23,11 @@
  */
 package middleware.provider;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import static java.time.ZonedDateTime.now;
@@ -39,23 +37,23 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import de.hsesslingen.keim.efs.middleware.provider.credentials.AbstractCredentials;
 import de.hsesslingen.keim.efs.middleware.provider.credentials.CredentialsUtils;
-import de.hsesslingen.keim.efs.middleware.model.BookingState;
+import static de.hsesslingen.keim.efs.middleware.model.BookingState.BOOKED;
 import de.hsesslingen.keim.efs.middleware.model.NewBooking;
 import de.hsesslingen.keim.efs.middleware.model.Leg;
 import de.hsesslingen.keim.efs.middleware.model.Place;
 import static de.hsesslingen.keim.efs.middleware.model.Place.fromCoordinates;
+import static de.hsesslingen.keim.efs.mobility.requests.MiddlewareRequest.TOKEN_HEADER;
 import static de.hsesslingen.keim.efs.mobility.service.Mode.BICYCLE;
 import java.time.LocalDateTime;
-import static java.time.temporal.ChronoUnit.HOURS;
 import middleware.MiddlewareTestApplication;
 import middleware.MiddlewareTestBase;
 import middleware.provider.credentials.TestCredential;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import org.springframework.test.context.ActiveProfiles;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -67,6 +65,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class BookingAndOptionsApiTest extends MiddlewareTestBase {
+
+    /**
+     * JSON-value of type {@link TestCredential}.
+     */
+    private static final String TOKEN_VALUE = "{\"id\":\"foobar\"}";
 
     @Autowired
     MockMvc mockMvc;
@@ -106,14 +109,14 @@ public class BookingAndOptionsApiTest extends MiddlewareTestBase {
 
     @Test
     public void getBookingByStateTest_200() throws Exception {
-        mockMvc.perform(get(BOOKINGS_PATH).param("state", BookingState.BOOKED.toString()))
+        mockMvc.perform(get(BOOKINGS_PATH).param("state", BOOKED.toString()).header(TOKEN_HEADER, TOKEN_VALUE))
                 .andExpect(status().is2xxSuccessful())
                 .andDo(print());
     }
 
     @Test
     public void getBookingByStateTest_400() throws Exception {
-        mockMvc.perform(get(BOOKINGS_PATH).param("state", "UNKNOWN"))
+        mockMvc.perform(get(BOOKINGS_PATH).param("state", "UNKNOWN").header(TOKEN_HEADER, TOKEN_VALUE))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code", is("400")))
                 .andDo(print());
@@ -121,28 +124,28 @@ public class BookingAndOptionsApiTest extends MiddlewareTestBase {
 
     @Test
     public void getBookingById_200() throws Exception {
-        mockMvc.perform(get(BOOKINGS_PATH + "/{id}", "booking_id_001"))
+        mockMvc.perform(get(BOOKINGS_PATH + "/{id}", "booking_id_001").header(TOKEN_HEADER, TOKEN_VALUE))
                 .andExpect(status().is2xxSuccessful())
                 .andDo(print());
     }
 
     @Test
     public void getBookings_200() throws Exception {
-        mockMvc.perform(get(BOOKINGS_PATH))
+        mockMvc.perform(get(BOOKINGS_PATH).header(TOKEN_HEADER, TOKEN_VALUE))
                 .andExpect(status().is2xxSuccessful())
                 .andDo(print());
     }
 
     @Test
     public void putBookingWithoutId_MethodNotAllowed_405() throws Exception {
-        mockMvc.perform(put(BOOKINGS_PATH))
+        mockMvc.perform(put(BOOKINGS_PATH).header(TOKEN_HEADER, TOKEN_VALUE))
                 .andExpect(status().isMethodNotAllowed())
                 .andDo(print());
     }
 
     @Test
     public void postBooking_Missing_RequestBody_400() throws Exception {
-        mockMvc.perform(post(BOOKINGS_PATH))
+        mockMvc.perform(post(BOOKINGS_PATH).header(TOKEN_HEADER, TOKEN_VALUE))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code", is("400")))
                 .andDo(print());
@@ -152,7 +155,11 @@ public class BookingAndOptionsApiTest extends MiddlewareTestBase {
     public void postBooking_Invalid_Booking_400() throws Exception {
         NewBooking newBooking = new NewBooking();
 
-        mockMvc.perform(post(BOOKINGS_PATH).content(mapper.writeValueAsBytes(newBooking)).contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(
+                post(BOOKINGS_PATH)
+                        .content(mapper.writeValueAsBytes(newBooking))
+                        .contentType(APPLICATION_JSON)
+                        .header(TOKEN_HEADER, TOKEN_VALUE))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", is("Validation failed")))
                 .andExpect(jsonPath("$.code", is("400")))
@@ -163,7 +170,11 @@ public class BookingAndOptionsApiTest extends MiddlewareTestBase {
     public void postBooking_Valid_Booking_200() throws Exception {
         NewBooking newBooking = getDummyNewBooking();
 
-        mockMvc.perform(post(BOOKINGS_PATH).content(mapper.writeValueAsBytes(newBooking)).contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(
+                post(BOOKINGS_PATH)
+                        .content(mapper.writeValueAsBytes(newBooking))
+                        .contentType(APPLICATION_JSON)
+                        .header(TOKEN_HEADER, TOKEN_VALUE))
                 .andExpect(status().isCreated())
                 .andDo(print());
     }
