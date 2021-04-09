@@ -12,6 +12,6 @@ de.hsesslingen.keim.efs.middleware.provider.config.ProviderRegistrator,\
 de.hsesslingen.keim.efs.middleware.consumer.ServiceDirectoryProxy,\
 de.hsesslingen.keim.efs.middleware.consumer.MiddlewareService,\
 de.hsesslingen.keim.efs.middleware.consumer.ProviderCache,\
-de.hsesslingen.keim.efs.middleware.config.RestUtilsAutoConfiguration,\
+de.hsesslingen.keim.efs.middleware.config.RequestConfiguration,\
 de.hsesslingen.keim.efs.middleware.config.SwaggerAutoConfiguration,\
 de.hsesslingen.keim.efs.middleware.utils.FlexibleZonedDateTimeParser
