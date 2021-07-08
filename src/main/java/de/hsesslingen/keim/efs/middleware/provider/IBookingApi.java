@@ -72,7 +72,7 @@ import org.springframework.http.ResponseEntity;
 @RequestMapping(value = "/api", produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IBookingApi {
 
-    public static final String PATH = "/bookings";
+    String PATH = "/bookings";
 
     /**
      * Returns a list of bookings associated with the account that is
@@ -88,7 +88,7 @@ public interface IBookingApi {
     @GetMapping(PATH)
     @ResponseStatus(HttpStatus.OK)
     @ApiOperation(value = "Get Bookings", notes = "Returns a list of Booking optionally filtered by their state.")
-    public List<Booking> getBookings(
+    List<Booking> getBookings(
             @ApiParam("An optional state by which to filter the bookings.")
             @RequestParam(required = false) BookingState state,
             //
@@ -109,7 +109,7 @@ public interface IBookingApi {
     @GetMapping(PATH + "/{id}")
     @ResponseStatus(HttpStatus.OK)
     @ApiOperation(value = "Get Booking by Id", notes = "Returns the Booking with the given unique booking id")
-    public Booking getBookingById(
+    Booking getBookingById(
             @ApiParam("The ID of the booking which shall be retrieved.")
             @PathVariable String id,
             //
@@ -133,7 +133,7 @@ public interface IBookingApi {
     @PostMapping(PATH)
     @ResponseStatus(HttpStatus.CREATED)
     @ApiOperation(value = "Create a new Booking", notes = "Creates a new Booking for a service-provider in BOOKED or STARTED state using the provided NewBooking object and returns it")
-    public Booking createNewBooking(
+    Booking createNewBooking(
             @ApiParam("The booking that should be created.")
             @RequestBody @Validated(OnCreate.class) @Valid @ConsistentBookingDateParams NewBooking newBooking,
             //
@@ -158,7 +158,7 @@ public interface IBookingApi {
     @PutMapping(PATH + "/{id}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     @ApiOperation(value = "Modify a Booking", notes = "Updates an existing Booking with the provided details")
-    public Booking modifyBooking(
+    Booking modifyBooking(
             @ApiParam("The ID of the booking that shall be modified.")
             @PathVariable String id,
             //
@@ -186,7 +186,7 @@ public interface IBookingApi {
     @PostMapping(PATH + "/{bookingId}/action/{action}")
     @ResponseStatus(HttpStatus.OK)
     @ApiOperation(value = "Perform an action on a booking", notes = "Performs the given action on a booking.")
-    public Booking performAction(
+    Booking performAction(
             @ApiParam("The ID of the booking on which to perform the action.")
             @PathVariable String bookingId,
             //
@@ -218,7 +218,7 @@ public interface IBookingApi {
      * building the request.
      * @return
      */
-    public static MiddlewareRequest<List<Booking>> buildGetBookingsRequest(
+    static MiddlewareRequest<List<Booking>> buildGetBookingsRequest(
             String serviceUrl,
             String token,
             MiddlewareRequestTemplate requestTemplate
@@ -226,7 +226,7 @@ public interface IBookingApi {
         return requestTemplate
                 .get(serviceUrl + PATH)
                 .token(token)
-                .expect(new ParameterizedTypeReference<List<Booking>>() {
+                .expect(new ParameterizedTypeReference<>() {
                 });
     }
 
@@ -250,7 +250,7 @@ public interface IBookingApi {
      * building the request.
      * @return
      */
-    public static MiddlewareRequest<List<Booking>> buildGetBookingsRequest(
+    static MiddlewareRequest<List<Booking>> buildGetBookingsRequest(
             String serviceUrl,
             BookingState state,
             String token,
@@ -279,7 +279,7 @@ public interface IBookingApi {
      * building the request.
      * @return
      */
-    public static MiddlewareRequest<Booking> buildGetBookingByIdRequest(
+    static MiddlewareRequest<Booking> buildGetBookingByIdRequest(
             String serviceUrl,
             String id,
             String token,
@@ -311,7 +311,7 @@ public interface IBookingApi {
      * building the request.
      * @return
      */
-    public static MiddlewareRequest<Booking> buildCreateNewBookingRequest(
+    static MiddlewareRequest<Booking> buildCreateNewBookingRequest(
             String serviceUrl,
             NewBooking newBooking,
             String token,
@@ -346,7 +346,7 @@ public interface IBookingApi {
      * building the request.
      * @return
      */
-    public static MiddlewareRequest<Booking> buildCreateNewBookingRequest(
+    static MiddlewareRequest<Booking> buildCreateNewBookingRequest(
             String serviceUrl,
             NewBooking newBooking,
             String optionReference,
@@ -377,7 +377,7 @@ public interface IBookingApi {
      * building the request.
      * @return
      */
-    public static MiddlewareRequest<Booking> buildModifyBookingRequest(
+    static MiddlewareRequest<Booking> buildModifyBookingRequest(
             String serviceUrl,
             Booking booking,
             String token,
@@ -413,7 +413,7 @@ public interface IBookingApi {
      * building the request.
      * @return
      */
-    public static MiddlewareRequest<Booking> buildPerformActionRequest(
+    static MiddlewareRequest<Booking> buildPerformActionRequest(
             String serviceUrl,
             String bookingId,
             BookingAction action,
@@ -451,7 +451,7 @@ public interface IBookingApi {
      * building the request.
      * @return
      */
-    public static MiddlewareRequest<Booking> buildPerformActionRequest(
+    static MiddlewareRequest<Booking> buildPerformActionRequest(
             String serviceUrl,
             String bookingId,
             BookingAction action,
